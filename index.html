@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ShareKit — AI Creator OS for ShareChat Creators</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary-start:#7C3AED;
+  --primary-end:#EC4899;
+  --pro:#8B5CF6;
+  --success:#10B981;
+  --warning:#F59E0B;
+  --surface:#F8F7FF;
+  --text-primary:#1A1A2E;
+  --text-secondary:#6B7280;
+  --lock-gray:#9CA3AF;
+  --border:#E5E7EB;
+  --danger:#EF4444;
+  --gradient: linear-gradient(135deg,#7C3AED 0%,#EC4899 100%);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:#EDEBFB;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text-primary);}
+button{font-family:inherit; cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+a{text-decoration:none;color:inherit;}
+
+/* ===== Demo control bar (NOT part of product UI) ===== */
+.demo-bar{max-width:428px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1A1A2E;color:#fff;font-size:12px;border-radius:12px 12px 0 0;gap:8px;}
+.demo-bar b{color:#C4B5FD;}
+.demo-toggle{display:flex;background:#33334d;border-radius:20px;padding:2px;}
+.demo-toggle button{border:none;background:transparent;color:#9CA3AF;padding:5px 12px;border-radius:18px;font-size:11px;font-weight:600;}
+.demo-toggle button.active{background:var(--gradient);color:#fff;}
+.demo-reset{background:transparent;border:1px solid #4b4b66;color:#c8c8d8;padding:5px 10px;border-radius:16px;font-size:11px;}
+
+/* ===== App shell (phone frame) ===== */
+.app-shell{max-width:428px;margin:0 auto;min-height:100vh;background:#fff;position:relative;box-shadow:0 0 40px rgba(0,0,0,0.12);overflow:hidden;}
+.screen{display:none;min-height:100vh;padding-bottom:96px;animation:fadein .18s ease;}
+.screen.no-nav{padding-bottom:24px;}
+.screen.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== Top bars ===== */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 8px;}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:-0.02em;}
+.logo-mark{width:30px;height:30px;border-radius:8px;object-fit:contain;flex-shrink:0;display:block;}
+.hero-logo{width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(124,58,237,0.25));}
+.bell-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;}
+.bell-dot{position:absolute;top:7px;right:8px;width:8px;height:8px;background:#EF4444;border-radius:50%;border:2px solid #fff;}
+
+.topbar-back{display:flex;align-items:center;padding:16px 16px 6px;position:relative;}
+.back-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--text-primary);flex-shrink:0;}
+.topbar-title{position:absolute;left:50%;transform:translateX(-50%);font-weight:700;font-size:16px;}
+.topbar-badge{margin-left:auto;}
+
+/* ===== Buttons ===== */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:12px;padding:14px 20px;font-weight:600;font-size:15px;width:100%;transition:transform .1s;}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3);}
+.btn-primary:disabled{opacity:.5;}
+.btn-outline{background:#fff;border:1.5px solid var(--pro);color:var(--pro);}
+.btn-outline-dark{background:#fff;border:1.5px solid #1A1A2E;color:#1A1A2E;}
+.btn-white{background:#fff;color:var(--primary-start);}
+.btn-sm{padding:9px 16px;font-size:13px;width:auto;border-radius:20px;}
+.btn-row{display:flex;gap:10px;}
+
+/* ===== Cards ===== */
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+.card-surface{background:var(--surface);border:none;border-radius:16px;padding:16px;}
+.section{padding:14px 20px;}
+.section-title{font-weight:700;font-size:16px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.section-title .see-all{font-weight:600;font-size:13px;color:var(--pro);}
+
+/* ===== Badges / chips ===== */
+.badge-pro{display:inline-flex;align-items:center;gap:4px;background:#EDE9FE;color:var(--pro);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.badge-mostpopular{position:absolute;top:-11px;right:14px;background:linear-gradient(135deg,#EF4444,#EC4899);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;box-shadow:0 3px 8px rgba(236,72,153,.4);}
+.badge-green{background:#D1FAE5;color:#059669;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.badge-gray{background:#F3F4F6;color:var(--text-secondary);font-size:12px;font-weight:600;padding:4px 11px;border-radius:20px;}
+.chip{display:inline-flex;align-items:center;background:#F3F0FF;color:var(--pro);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;margin:2px 3px 2px 0;}
+.lock-icon{color:var(--lock-gray);}
+
+/* ===== Icon circles ===== */
+.icon-circle{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;position:relative;}
+.icon-circle.round{border-radius:50%;}
+.tint-pink{background:#FCE7F3;}
+.tint-blue{background:#DBEAFE;}
+.tint-green{background:#D1FAE5;}
+.tint-orange{background:#FEF3C7;}
+.tint-purple{background:#EDE9FE;}
+.tint-red{background:#FEE2E2;}
+.lock-overlay{position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+
+/* ===== Rows (settings / feature list style) ===== */
+.row{display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid var(--border);}
+.row:last-child{border-bottom:none;}
+.row-text{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;}
+.row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+.row-value{font-size:13px;color:var(--text-secondary);font-weight:500;}
+.chevron{color:#C4C4CE;flex-shrink:0;}
+
+/* ===== Inputs ===== */
+.field-label{font-size:13px;font-weight:600;margin-bottom:6px;display:block;}
+.input-wrap{position:relative;margin-bottom:16px;}
+.input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-secondary);}
+.input{width:100%;padding:13px 14px 13px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:#FAFAFC;}
+.input:focus{outline:none;border-color:var(--pro);background:#fff;}
+.input-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-secondary);display:flex;}
+.textarea{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-size:14px;background:#FAFAFC;resize:none;min-height:110px;}
+.textarea:focus{outline:none;border-color:var(--pro);background:#fff;}
+.char-count{text-align:right;font-size:11px;color:var(--text-secondary);margin-top:4px;}
+.select-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px;background:#fff;}
+.select-row select{border:none;background:transparent;font-weight:600;font-size:13px;text-align:right;flex:1;color:var(--text-primary);appearance:none;-webkit-appearance:none;}
+.divider-or{display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:12px;margin:16px 0;}
+.divider-or::before,.divider-or::after{content:"";flex:1;height:1px;background:var(--border);}
+
+/* ===== Password checklist ===== */
+.pw-check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);margin-top:5px;}
+.pw-check.ok{color:var(--success);}
+.pw-check .dot{width:14px;height:14px;border-radius:50%;border:1.5px solid #D1D5DB;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+.pw-check.ok .dot{background:var(--success);border-color:var(--success);color:#fff;}
+
+/* ===== Bottom nav ===== */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:10px 6px 22px;z-index:40;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#9CA3AF;font-size:10px;font-weight:600;padding:4px 6px;}
+.nav-item.active{color:var(--primary-start);}
+.nav-fab{width:52px;height:52px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 16px rgba(124,58,237,0.4);margin-top:-26px;border:4px solid #fff;}
+
+/* ===== Stepper ===== */
+.stepper{display:flex;align-items:center;justify-content:center;gap:0;padding:6px 30px 18px;}
+.step{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;flex:1;}
+.step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #E5E7EB;color:#9CA3AF;background:#fff;z-index:2;}
+.step.active .step-circle{background:var(--gradient);border-color:transparent;color:#fff;}
+.step.done .step-circle{background:var(--success);border-color:var(--success);color:#fff;}
+.step-label{font-size:10px;font-weight:600;color:#9CA3AF;}
+.step.active .step-label{color:var(--primary-start);}
+.step.done .step-label{color:var(--success);}
+.step-line{position:absolute;top:13px;left:-50%;width:100%;height:2px;background:#E5E7EB;z-index:1;}
+.step.done .step-line{background:var(--success);}
+.step:first-child .step-line{display:none;}
+
+/* ===== Progress bar ===== */
+.progress-track{width:100%;height:8px;background:#EDE9FE;border-radius:20px;overflow:hidden;margin-top:10px;}
+.progress-fill{height:100%;background:var(--gradient);border-radius:20px;transition:width .3s;}
+.progress-fill.danger{background:var(--danger);}
+
+/* ===== Quick action cards ===== */
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+.quick-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:none;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.quick-card span{font-size:11px;font-weight:600;line-height:1.25;}
+.pro-row-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+.pro-mini{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;text-align:center;}
+.pro-mini span{font-size:11px;font-weight:600;color:var(--text-primary);}
+
+/* ===== Toast ===== */
+.toast-wrap{position:absolute;bottom:100px;left:16px;right:16px;z-index:100;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:#1A1A2E;color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 20px rgba(0,0,0,0.25);animation:toastin .25s ease;}
+.toast.success{background:#065F46;}
+.toast.error{background:#7F1D1D;}
+@keyframes toastin{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== Bottom sheet / modal ===== */
+.sheet-overlay{position:absolute;inset:0;background:rgba(20,20,30,0.5);z-index:200;display:none;align-items:flex-end;}
+.sheet-overlay.show{display:flex;}
+.sheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:22px 20px 26px;animation:sheetup .22s ease;}
+@keyframes sheetup{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.sheet-handle{width:38px;height:4px;background:#E5E7EB;border-radius:4px;margin:0 auto 16px;}
+
+/* ===== Misc ===== */
+.avatar{width:58px;height:58px;border-radius:50%;background:#E9E7F5;display:flex;align-items:center;justify-content:center;color:#B4AEDD;flex-shrink:0;}
+.avatar-sm{width:44px;height:44px;}
+.hero-illustration{width:100%;display:flex;justify-content:center;padding:26px 0;}
+.tip-box{background:#FFFBEB;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:#92400E;margin-top:14px;}
+.upload-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.upload-card{border:1.5px dashed var(--border);border-radius:12px;padding:16px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-secondary);background:#fff;}
+.upload-card.selected{border-color:var(--pro);background:#F5F3FF;color:var(--pro);}
+.testimonial-track{display:flex;overflow-x:auto;gap:12px;scroll-snap-type:x mandatory;padding-bottom:4px;}
+.testimonial-track::-webkit-scrollbar{display:none;}
+.testimonial-card{min-width:88%;scroll-snap-align:start;background:#fff;border-radius:14px;padding:14px;border:1px solid var(--border);}
+.dots-row{display:flex;justify-content:center;gap:5px;margin-top:10px;}
+.dots-row .d{width:6px;height:6px;border-radius:50%;background:#E5E7EB;}
+.dots-row .d.active{background:var(--pro);width:16px;border-radius:4px;}
+.compare-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.compare-table td{padding:11px 4px;border-bottom:1px solid var(--border);vertical-align:top;}
+.compare-table .feat-col{display:flex;align-items:center;gap:8px;font-weight:600;}
+.compare-table .free-col{color:var(--text-secondary);width:72px;}
+.compare-table .pro-col{color:var(--success);font-weight:600;width:110px;}
+.calendar-wrap{padding:0 20px;}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-nav-btn{background:#F3F4F6;border:none;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;}
+.cal-dow{font-size:10px;color:var(--text-secondary);font-weight:700;padding:6px 0;}
+.cal-day{position:relative;padding:9px 0 12px;font-size:12.5px;border-radius:10px;font-weight:500;color:var(--text-primary);background:transparent;border:none;}
+.cal-day.muted{color:#D1D5DB;}
+.cal-day.selected{background:var(--gradient);color:#fff;font-weight:700;}
+.cal-day.today:not(.selected){border:1.5px solid var(--pro);}
+.cal-day .dotmark{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;}
+.legend-row{display:flex;gap:14px;font-size:11px;color:var(--text-secondary);margin:12px 0;align-items:center;}
+.legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.post-item{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);}
+.post-thumb{width:44px;height:44px;border-radius:10px;background:var(--gradient);flex-shrink:0;}
+.locked-panel{text-align:center;padding:30px 24px;}
+.accordion-item{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.accordion-head{display:flex;align-items:center;gap:12px;padding:14px;background:#fff;}
+.accordion-body{display:none;padding:0 14px 14px 66px;font-size:13px;color:var(--text-secondary);}
+.accordion-body.open{display:block;}
+.accordion-body ul{margin:0;padding-left:16px;}
+.accordion-body li{margin-bottom:6px;}
+.gtext{background:var(--gradient);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.spin{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.check-list-item{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px;}
+.faq-item{border-bottom:1px solid var(--border);padding:14px 0;}
+.faq-q{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13.5px;}
+.faq-a{font-size:12.5px;color:var(--text-secondary);margin-top:8px;display:none;line-height:1.5;}
+.faq-a.open{display:block;}
+
+/* ===== Generated image block ===== */
+.gen-image-wrap{position:relative;border-radius:16px;overflow:hidden;margin-bottom:14px;background:#F3F4F6;aspect-ratio:16/10;}
+.gen-image-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.gen-image-label{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.gen-image-expand{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(0,0,0,0.55);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;}
+.gen-image-skeleton{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-secondary);font-size:12.5px;background:linear-gradient(90deg,#F3F4F6 25%,#ECEAFB 37%,#F3F4F6 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
+@keyframes shimmer{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+.gen-image-locked{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text-secondary);font-size:12.5px;text-align:center;padding:0 20px;}
+
+/* ===== Result cards with header copy buttons (new Create3 style) ===== */
+.copy-card{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;padding:14px;}
+.copy-card-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.copy-card-badge{background:#EDE9FE;color:var(--pro);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.copy-card-title{font-weight:700;font-size:14px;flex:1;}
+.copy-btn{display:flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--pro);color:var(--pro);font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:20px;flex-shrink:0;}
+.copy-card-body{font-size:13px;color:var(--text-primary);line-height:1.5;max-height:44px;overflow:hidden;position:relative;}
+.copy-card-body.expanded{max-height:none;}
+.copy-card-expand{display:flex;justify-content:center;padding-top:6px;color:var(--text-secondary);cursor:pointer;}
+
+/* ===== Download Complete modal ===== */
+.quick-actions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+.quick-action-mini{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 6px;text-align:center;position:relative;}
+.quick-action-mini span.label{font-size:10.5px;font-weight:700;}
+.quick-action-mini span.sub{font-size:9px;color:var(--text-secondary);}
+.quick-action-mini .mini-pro{position:absolute;top:6px;right:6px;background:#EDE9FE;color:var(--pro);font-size:8px;font-weight:800;padding:1px 5px;border-radius:8px;}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <div><b>DEMO CONTROLS</b> — not part of product UI</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="demo-toggle">
+      <button id="demoFreeBtn" class="active" onclick="setPlan('free')">Free</button>
+      <button id="demoProBtn" onclick="setPlan('pro')">Pro</button>
+    </div>
+    <button class="demo-reset" onclick="resetApp()">Reset</button>
+  </div>
+</div>
+
+<div class="app-shell" id="appShell">
+
+<!-- ================= AUTH: WELCOME ================= -->
+<div class="screen no-nav active" id="screen-welcome">
+  <div style="padding:26px 24px 0;">
+    <div class="logo"><img src="/logo.png" class="logo-mark" alt="ShareKit">ShareKit</div>
+  </div>
+  <div class="hero-illustration">
+    <img src="/logo.png" class="hero-logo" alt="ShareKit">
+  </div>
+  <div style="padding:0 28px;text-align:center;">
+    <h1 style="font-size:24px;font-weight:800;margin:0 0 8px;">Welcome to ShareKit</h1>
+    <p style="color:var(--text-secondary);font-size:14px;margin:0 0 30px;">The AI Creator OS for ShareChat Creators.</p>
+  </div>
+  <div style="padding:0 24px;">
+    <button class="btn btn-outline-dark" onclick="showScreen('screen-dashboard');toast('Signed in with Google (demo)','success')">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 013.68 9c0-.59.1-1.17.27-1.7V4.97H.95A9 9 0 000 9c0 1.45.35 2.83.95 4.03l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 00.95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <div class="divider-or">or</div>
+    <button class="btn btn-primary" onclick="showScreen('screen-signup')">Continue with Email</button>
+    <p style="text-align:center;font-size:11px;color:var(--text-secondary);margin-top:16px;">By continuing, you agree to our <a style="color:var(--pro);font-weight:600;" href="#" onclick="return false;">Terms & Conditions</a> and <a style="color:var(--pro);font-weight:600;" href="#" onclick="return false;">Privacy Policy</a></p>
+  </div>
+</div>
+
+<!-- ================= AUTH: LOGIN ================= -->
+<div class="screen no-nav" id="screen-login">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-welcome')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+  </div>
+  <div style="padding:8px 24px 0;">
+    <h1 style="font-size:22px;font-weight:800;margin:0 0 6px;">Login</h1>
+    <p style="color:var(--text-secondary);font-size:13.5px;margin:0 0 24px;">Welcome back! Please login to your account.</p>
+
+    <label class="field-label">Email Address</label>
+    <div class="input-wrap">
+      <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></svg></span>
+      <input class="input" type="email" id="loginEmail" placeholder="Enter your email">
+    </div>
+
+    <label class="field-label">Password</label>
+    <div class="input-wrap">
+      <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+      <input class="input" type="password" id="loginPassword" placeholder="Enter your password">
+      <button class="input-eye" onclick="togglePw('loginPassword',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <div style="text-align:right;margin:-10px 0 20px;">
+      <a href="#" onclick="toast('Password reset link sent (demo)');return false;" style="color:var(--pro);font-size:12.5px;font-weight:600;">Forgot Password?</a>
+    </div>
+
+    <button class="btn btn-primary" onclick="doLogin()">Login</button>
+    <div class="divider-or">or</div>
+    <button class="btn btn-outline-dark" onclick="showScreen('screen-dashboard');toast('Signed in with Google (demo)','success')">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 013.68 9c0-.59.1-1.17.27-1.7V4.97H.95A9 9 0 000 9c0 1.45.35 2.83.95 4.03l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 00.95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <p style="text-align:center;font-size:13px;color:var(--text-secondary);margin-top:18px;">Don't have an account? <a href="#" onclick="showScreen('screen-signup');return false;" style="color:var(--pro);font-weight:700;">Sign up</a></p>
+  </div>
+</div>
+
+<!-- ================= AUTH: SIGNUP ================= -->
+<div class="screen no-nav" id="screen-signup">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-welcome')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+  </div>
+  <div style="padding:8px 24px 0;">
+    <h1 style="font-size:22px;font-weight:800;margin:0 0 6px;">Create Account</h1>
+    <p style="color:var(--text-secondary);font-size:13.5px;margin:0 0 22px;">Create your account and start your AI content journey.</p>
+
+    <label class="field-label">Full Name</label>
+    <div class="input-wrap">
+      <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></span>
+      <input class="input" type="text" id="suName" placeholder="Enter your full name">
+    </div>
+
+    <label class="field-label">Email Address</label>
+    <div class="input-wrap">
+      <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></svg></span>
+      <input class="input" type="email" id="suEmail" placeholder="Enter your email">
+    </div>
+
+    <label class="field-label">Password</label>
+    <div class="input-wrap" style="margin-bottom:6px;">
+      <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+      <input class="input" type="password" id="suPassword" placeholder="Create a password" oninput="checkPwStrength()">
+      <button class="input-eye" onclick="togglePw('suPassword',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <label class="field-label">Confirm Password</label>
+    <div class="input-wrap" style="margin-bottom:4px;">
+      <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+      <input class="input" type="password" id="suPassword2" placeholder="Re-enter password" oninput="checkPwStrength()">
+    </div>
+
+    <div id="pwChecks" style="margin:8px 0 18px;">
+      <div class="pw-check" id="pwLen"><span class="dot">•</span> At least 8 characters</div>
+      <div class="pw-check" id="pwNum"><span class="dot">•</span> Include number or special character</div>
+      <div class="pw-check" id="pwMatch"><span class="dot">•</span> Passwords match</div>
+    </div>
+
+    <button class="btn btn-primary" id="signupBtn" onclick="doSignup()">Sign Up</button>
+    <div class="divider-or">or</div>
+    <button class="btn btn-outline-dark" onclick="showScreen('screen-dashboard');toast('Signed up with Google (demo)','success')">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 013.68 9c0-.59.1-1.17.27-1.7V4.97H.95A9 9 0 000 9c0 1.45.35 2.83.95 4.03l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 00.95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div class="screen" id="screen-dashboard">
+  <div class="topbar">
+    <div class="logo"><img src="/logo.png" class="logo-mark" alt="ShareKit">ShareKit</div>
+    <button class="bell-btn" onclick="toast('No new notifications')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="bell-dot"></span>
+    </button>
+  </div>
+
+  <div class="section" style="padding-top:6px;">
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div class="avatar avatar-sm">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:15px;">Hello, Creator 👋</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Let's grow your ShareChat audience</div>
+      </div>
+      <button class="btn btn-outline btn-sm" id="dashUpgradeChip" onclick="showScreen('screen-subscription')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3l4 9h4l4-9-6 5-2-5-2 5-6-5z"/></svg>
+        Upgrade
+      </button>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0;">
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div class="icon-circle round tint-purple" style="color:var(--pro);">⚡</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text-secondary);">AI Creations Left Today</div>
+        <div style="font-weight:800;font-size:17px;color:var(--pro);" id="dashCreditsText">5 / 5</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);" id="dashResetText">Reset in 24h</div>
+    </div>
+    <div class="progress-track" style="margin-top:-1px;">
+      <div class="progress-fill" id="dashProgressFill" style="width:100%;"></div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:6px;">
+    <button class="btn btn-primary" style="padding:16px;font-size:15.5px;" onclick="startCreateFlow()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+      Create Content
+    </button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Quick Actions <a class="see-all" href="#" onclick="return false;">See All</a></div>
+    <div class="quick-grid">
+      <button class="quick-card" onclick="startCreateFlow()">
+        <div class="icon-circle tint-pink">✏️</div><span>Caption Generator</span>
+      </button>
+      <button class="quick-card" onclick="startCreateFlow()">
+        <div class="icon-circle tint-blue">#</div><span>Keywords & Hashtags</span>
+      </button>
+      <button class="quick-card" onclick="showScreen('screen-calendar');renderCalendar();">
+        <div class="icon-circle tint-green">📅</div><span>Content Calendar</span>
+      </button>
+      <button class="quick-card" onclick="openAutoCreator()" style="position:relative;">
+        <div class="icon-circle tint-orange">✨<span class="lock-overlay pro-gate">🔒</span></div><span>AI Auto Creator</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card-surface" style="display:flex;gap:12px;align-items:center;">
+      <div style="flex:1;">
+        <div style="color:var(--pro);font-weight:700;font-size:13px;margin-bottom:6px;">✨ Today's AI Suggestion</div>
+        <div style="font-size:13px;line-height:1.5;">"Share motivational thoughts about consistency. It performs really well with your audience."</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="startCreateFlow('Share motivational thoughts about consistency and staying disciplined.')">Create Now →</button>
+      </div>
+      <div style="font-size:44px;flex-shrink:0;">🎯</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Unlock More with Pro</div>
+    <div class="pro-row-grid">
+      <button class="pro-mini pro-gate" onclick="handleProMiniTap('Best Posting Time')">
+        <div class="icon-circle round tint-orange">🕐<span class="lock-overlay">🔒</span></div><span>Best Posting Time</span>
+      </button>
+      <button class="pro-mini pro-gate" onclick="handleProMiniTap('Smart Reminders')">
+        <div class="icon-circle round tint-blue">🔔<span class="lock-overlay">🔒</span></div><span>Smart Reminders</span>
+      </button>
+      <button class="pro-mini pro-gate" onclick="handleProMiniTap('AI Memory')">
+        <div class="icon-circle round tint-purple">🧠<span class="lock-overlay">🔒</span></div><span>AI Memory</span>
+      </button>
+      <button class="pro-mini pro-gate" onclick="handleProMiniTap('AI Support Assistant')">
+        <div class="icon-circle round tint-red">🎧<span class="lock-overlay">🔒</span></div><span>AI Support Assistant</span>
+      </button>
+    </div>
+  </div>
+
+  <div style="height:6px;"></div>
+</div>
+
+<!-- ================= CREATE CONTENT: STEP 1 ================= -->
+<div class="screen" id="screen-create1">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">Create Content</div>
+  </div>
+  <div class="stepper">
+    <div class="step active"><div class="step-circle">1</div><div class="step-label">Input</div></div>
+    <div class="step"><div class="step-line"></div><div class="step-circle">2</div><div class="step-label">Preferences</div></div>
+    <div class="step"><div class="step-line"></div><div class="step-circle">3</div><div class="step-label">Generate</div></div>
+  </div>
+  <div style="padding:6px 20px;">
+    <h2 style="font-size:18px;font-weight:800;margin:0 0 5px;">What do you want to create today?</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 16px;">Enter a topic idea or upload media to get AI generated content.</p>
+    <textarea class="textarea" id="createTopic" maxlength="200" placeholder="Enter your topic or idea..." oninput="updateCharCount()"></textarea>
+    <div class="char-count"><span id="charCountNum">0</span>/200</div>
+
+    <p style="font-size:12.5px;color:var(--text-secondary);font-weight:600;margin:16px 0 0;">Or upload media (optional)</p>
+    <div class="upload-row">
+      <button class="upload-card" onclick="toggleUpload(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Image</button>
+      <button class="upload-card" onclick="toggleUpload(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>Video</button>
+      <button class="upload-card" onclick="toggleUpload(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Gallery</button>
+    </div>
+
+    <div class="tip-box">💡 <span>The more details you add, the better your content will be.</span></div>
+  </div>
+  <div style="padding:18px 20px;position:sticky;bottom:0;background:#fff;">
+    <button class="btn btn-primary" onclick="goCreateStep2()">Next</button>
+  </div>
+</div>
+
+<!-- ================= CREATE CONTENT: STEP 2 ================= -->
+<div class="screen" id="screen-create2">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-create1')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">Create Content</div>
+  </div>
+  <div class="stepper">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Input</div></div>
+    <div class="step active"><div class="step-line"></div><div class="step-circle">2</div><div class="step-label">Preferences</div></div>
+    <div class="step"><div class="step-line"></div><div class="step-circle">3</div><div class="step-label">Generate</div></div>
+  </div>
+  <div style="padding:6px 20px;">
+    <h2 style="font-size:18px;font-weight:800;margin:0 0 5px;">Choose your preferences</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 16px;">Tell us more about your content</p>
+
+    <div class="select-row">👑<select id="prefContentType"></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div class="select-row">🌐<select id="prefLanguage"></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div class="select-row">🙂<select id="prefTone"></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div class="select-row">👤<select id="prefAudience"><option>General</option><option>Youth (18-24)</option><option>Family</option><option>Devotional Audience</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+
+    <div class="row pro-gate" onclick="handleAdvancedOptionsTap()" style="border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;">
+      <div class="icon-circle tint-orange" style="width:38px;height:38px;font-size:16px;">👑</div>
+      <div class="row-text">
+        <div class="row-title">Advanced Options <span class="badge-pro">Pro</span></div>
+        <div class="row-sub">More customization like target audience, keywords focus, content length etc.</div>
+      </div>
+      <span class="lock-icon">🔒</span>
+    </div>
+  </div>
+  <div style="padding:18px 20px;position:sticky;bottom:0;background:#fff;">
+    <button class="btn btn-primary" id="genContentBtn" onclick="generateContent()">Generate Content</button>
+  </div>
+</div>
+
+<!-- ================= CREATE CONTENT: STEP 3 ================= -->
+<div class="screen" id="screen-create3">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-create2')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">Create Content</div>
+    <button style="margin-left:auto;background:none;border:none;color:var(--text-primary);" onclick="toast('More options coming soon')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+    </button>
+  </div>
+  <div class="stepper">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Input</div></div>
+    <div class="step done"><div class="step-line"></div><div class="step-circle">✓</div><div class="step-label">Preferences</div></div>
+    <div class="step active"><div class="step-line"></div><div class="step-circle">3</div><div class="step-label">Generate</div></div>
+  </div>
+  <div style="padding:6px 20px;text-align:center;">
+    <div style="font-size:40px;">🎉</div>
+    <h2 style="font-size:18px;font-weight:800;margin:4px 0 4px;">Your content is ready! 🎉</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 14px;">Here's your AI generated content pack</p>
+  </div>
+
+  <div style="padding:0 20px;">
+    <div id="createImageBlock"></div>
+    <div id="createResultsList"></div>
+
+    <div class="card-surface" style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+      <span style="font-size:18px;">✨</span>
+      <div style="font-size:12.5px;line-height:1.4;"><b>Pro Tip:</b> Posting at the right time can increase your reach by 3x!</div>
+    </div>
+  </div>
+
+  <div style="padding:0 20px 14px;">
+    <div class="btn-row" style="margin-bottom:10px;">
+      <button class="btn btn-outline-dark" style="flex:1;" onclick="showScreen('screen-create2')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Edit Content
+      </button>
+      <button class="btn btn-primary" style="flex:1;" onclick="downloadContent()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+        Download Content
+      </button>
+    </div>
+    <div class="row" style="border:1px solid var(--border);border-radius:12px;padding:12px 14px;cursor:default;">
+      <span style="color:var(--success);font-size:16px;">🛡️</span>
+      <div class="row-text"><div class="row-title" style="font-weight:600;font-size:13px;">Content is saved in your History</div></div>
+      <span class="chevron">›</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= AI AUTO CREATOR: STEP 1 ================= -->
+<div class="screen" id="screen-auto1">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-dashboard')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">AI Auto Creator</div>
+    <span class="topbar-badge badge-pro">Pro</span>
+  </div>
+  <div class="stepper">
+    <div class="step active"><div class="step-circle">1</div><div class="step-label">Input</div></div>
+    <div class="step"><div class="step-line"></div><div class="step-circle">2</div><div class="step-label">AI Working</div></div>
+    <div class="step"><div class="step-line"></div><div class="step-circle">3</div><div class="step-label">Done</div></div>
+  </div>
+  <div style="padding:6px 20px;">
+    <h2 style="font-size:18px;font-weight:800;margin:0 0 5px;">Tell AI what to create</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 16px;">Add a topic, idea or upload media. AI will take care of the rest.</p>
+    <textarea class="textarea" id="autoTopic" maxlength="200" placeholder="Motivational thoughts about consistency and never giving up.">Motivational thoughts about consistency and never giving up.</textarea>
+    <div class="char-count"><span id="autoCharCount">62</span>/200</div>
+
+    <p style="font-size:12.5px;color:var(--text-secondary);font-weight:600;margin:16px 0 0;">Or upload media (optional)</p>
+    <div class="upload-row">
+      <button class="upload-card" onclick="toggleUpload(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Image</button>
+      <button class="upload-card" onclick="toggleUpload(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>Video</button>
+      <button class="upload-card" onclick="toggleUpload(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Gallery</button>
+    </div>
+
+    <p style="font-size:12.5px;color:var(--text-secondary);font-weight:600;margin:18px 0 8px;">Preferences (Optional)</p>
+    <div class="select-row">👑<select id="autoContentType"></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div class="select-row">🙂<select id="autoTone"></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+  </div>
+  <div style="padding:18px 20px;position:sticky;bottom:0;background:#fff;">
+    <button class="btn btn-primary" onclick="startAutoCreatorWorking()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+      Generate with AI
+    </button>
+  </div>
+</div>
+
+<!-- ================= AI AUTO CREATOR: STEP 2 (LOADING) ================= -->
+<div class="screen" id="screen-auto2">
+  <div class="topbar-back">
+    <div style="width:36px;"></div>
+    <div class="topbar-title">AI Auto Creator</div>
+    <span class="topbar-badge badge-pro">Pro</span>
+  </div>
+  <div class="stepper">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Input</div></div>
+    <div class="step active"><div class="step-line"></div><div class="step-circle">2</div><div class="step-label">AI Working</div></div>
+    <div class="step"><div class="step-line"></div><div class="step-circle">3</div><div class="step-label">Done</div></div>
+  </div>
+  <div style="padding:20px 30px;text-align:center;">
+    <svg width="70" height="70" viewBox="0 0 24 24" fill="none" class="spin" style="margin:10px auto 6px;display:block;">
+      <circle cx="12" cy="12" r="9" stroke="#EDE9FE" stroke-width="3"/>
+      <path d="M21 12a9 9 0 00-9-9" stroke="#7C3AED" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h2 style="font-size:17px;font-weight:800;margin:8px 0 4px;">AI is working its magic ✨</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 20px;">Generating your complete content package...</p>
+    <div style="text-align:left;" id="autoChecklist">
+      <div class="check-list-item" data-step="0"><span class="ci-icon">⏳</span> Analyzing your topic</div>
+      <div class="check-list-item" data-step="1"><span class="ci-icon">⏳</span> Generating captions</div>
+      <div class="check-list-item" data-step="2"><span class="ci-icon">⏳</span> Finding keywords</div>
+      <div class="check-list-item" data-step="3"><span class="ci-icon">⏳</span> Finding hashtags</div>
+      <div class="check-list-item" data-step="4"><span class="ci-icon">⏳</span> Finding best time to post</div>
+      <div class="check-list-item" data-step="5"><span class="ci-icon">⏳</span> Scheduling in calendar</div>
+    </div>
+    <div class="badge-gray" style="margin-top:14px;display:inline-block;">✨ This may take 15–30 seconds</div>
+  </div>
+</div>
+
+<!-- ================= AI AUTO CREATOR: STEP 3 (DONE) ================= -->
+<div class="screen" id="screen-auto3">
+  <div class="topbar-back">
+    <div style="width:36px;"></div>
+    <div class="topbar-title">AI Auto Creator</div>
+    <span class="topbar-badge badge-pro">Pro</span>
+  </div>
+  <div class="stepper">
+    <div class="step done"><div class="step-circle">✓</div><div class="step-label">Input</div></div>
+    <div class="step done"><div class="step-line"></div><div class="step-circle">✓</div><div class="step-label">AI Working</div></div>
+    <div class="step active"><div class="step-line"></div><div class="step-circle">3</div><div class="step-label">Done</div></div>
+  </div>
+  <div style="padding:10px 20px;text-align:center;">
+    <div style="font-size:46px;">🎉</div>
+    <h2 style="font-size:18px;font-weight:800;margin:6px 0 4px;">All done! Your content is ready</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 16px;">AI has created and scheduled everything for you.</p>
+  </div>
+  <div style="padding:0 20px;">
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="icon-circle tint-purple" style="width:38px;height:38px;font-size:16px;">📅</div>
+        <div style="flex:1;">
+          <div class="row-title">Scheduled on Calendar</div>
+          <div class="row-sub" id="autoScheduledText">—</div>
+        </div>
+        <span class="badge-green">Scheduled</span>
+      </div>
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:12px;" onclick="showScreen('screen-calendar');renderCalendar();">View in Calendar</button>
+    </div>
+    <p style="font-weight:700;font-size:14px;margin:0 0 8px;">Your Content Package</p>
+    <div id="autoResultsList"></div>
+  </div>
+  <div style="padding:18px 20px;position:sticky;bottom:0;background:#fff;" class="btn-row">
+    <button class="btn btn-outline-dark" style="width:auto;flex:1;" onclick="toast('Opening preview...')">Preview All</button>
+    <button class="btn btn-primary" style="flex:1;" onclick="showScreen('screen-dashboard')">Done</button>
+  </div>
+</div>
+
+<!-- ================= AI CONTENT CALENDAR ================= -->
+<div class="screen" id="screen-calendar">
+  <div class="topbar">
+    <div class="logo"><img src="/logo.png" class="logo-mark" alt="ShareKit">ShareKit</div>
+    <span class="badge-pro">Pro</span>
+  </div>
+  <div style="padding:2px 20px 10px;">
+    <h2 style="font-size:18px;font-weight:800;margin:0 0 4px;">AI Content Calendar</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0;">Plan, organize and never miss a post.</p>
+  </div>
+
+  <!-- Free upgrade banner (hidden when Pro) -->
+  <div class="section" style="padding-top:6px;" id="calUpgradeBanner">
+    <div class="card-surface" style="background:#FFFBEB;display:flex;gap:12px;align-items:flex-start;">
+      <div style="font-size:26px;">👑</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13.5px;margin-bottom:3px;">Want to plan unlimited content?</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">Upgrade to Pro to unlock 30-day calendar, best time, reminders & more.</div>
+        <button class="btn btn-primary btn-sm" onclick="showScreen('screen-subscription')">Upgrade to Pro</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar-wrap">
+    <div class="cal-head">
+      <button class="cal-nav-btn" onclick="calShiftMonth(-1)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div style="font-weight:700;font-size:14.5px;" id="calMonthLabel">May 2025</div>
+      <button class="cal-nav-btn" onclick="calShiftMonth(1)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+    </div>
+    <div class="cal-grid" id="calDowRow">
+      <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+    </div>
+    <div class="cal-grid" id="calDaysGrid"></div>
+    <div class="legend-row" id="calLegend">
+      <span><span class="legend-dot" style="background:var(--success);"></span>Scheduled</span>
+      <span><span class="legend-dot" style="background:var(--warning);"></span>Draft</span>
+      <span><span class="legend-dot" style="background:#E5E7EB;"></span>No Content</span>
+    </div>
+  </div>
+
+  <div style="padding:0 20px;" id="calSelectedPanel"></div>
+
+  <!-- Pro: Add New Content CTA -->
+  <div class="section" id="calAddBtnWrap">
+    <button class="btn btn-primary" onclick="openCalendarAdd()">+ Add New Content</button>
+  </div>
+
+  <!-- Free: Locked panel -->
+  <div class="locked-panel card-surface" style="margin:16px 20px;" id="calLockedPanel">
+    <div style="font-size:30px;">🔒</div>
+    <div style="font-weight:700;font-size:14.5px;margin:8px 0 4px;">AI Content Calendar is locked</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);margin-bottom:14px;">Upgrade to Pro to plan, save and get reminded for your content.</div>
+    <button class="btn btn-outline" style="width:auto;padding:11px 22px;" onclick="showScreen('screen-subscription')">Upgrade to Pro</button>
+  </div>
+</div>
+
+<!-- ================= CALENDAR: ADD NEW CONTENT ================= -->
+<div class="screen" id="screen-calendar-add">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-calendar')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">Add New Content</div>
+  </div>
+  <div style="padding:8px 20px;">
+
+    <p style="font-weight:700;font-size:13.5px;margin:10px 0 8px;">1. Select Date</p>
+    <div class="select-row">📅<input type="date" id="addDate" style="border:none;background:transparent;font-weight:600;font-size:13px;flex:1;text-align:right;color:var(--text-primary);"></div>
+
+    <p style="font-weight:700;font-size:13.5px;margin:16px 0 8px;">2. Add Content</p>
+    <div class="row" onclick="showScreen('screen-create1')" style="border:1.5px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer;">
+      <div class="icon-circle tint-purple" style="width:38px;height:38px;font-size:16px;">✨</div>
+      <div class="row-text"><div class="row-title">Create with AI</div><div class="row-sub">Generate content using AI</div></div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="row" onclick="toast('History is empty (demo)')" style="border:1.5px solid var(--border);border-radius:12px;padding:13px;cursor:pointer;">
+      <div class="icon-circle tint-blue" style="width:38px;height:38px;font-size:16px;">📋</div>
+      <div class="row-text"><div class="row-title">Use Existing Content</div><div class="row-sub">Choose from your history</div></div>
+      <span class="chevron">›</span>
+    </div>
+
+    <p style="font-weight:700;font-size:13.5px;margin:18px 0 3px;">3. Best Time to Post</p>
+    <p style="font-size:11.5px;color:var(--text-secondary);margin:0 0 10px;">Choose AI recommended time or set your own</p>
+    <label class="row" style="border:1.5px solid var(--pro);background:#F5F3FF;border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer;">
+      <input type="radio" name="bestTime" checked onchange="toggleCustomTime(false)" style="accent-color:#7C3AED;width:17px;height:17px;">
+      <div class="row-text"><div class="row-title">Best Time (Recommended)</div></div>
+      <span style="color:var(--success);font-weight:700;font-size:13px;">7:30 PM</span>
+    </label>
+    <label class="row" style="border:1.5px solid var(--border);border-radius:12px;padding:13px;cursor:pointer;">
+      <input type="radio" name="bestTime" onchange="toggleCustomTime(true)" style="accent-color:#7C3AED;width:17px;height:17px;">
+      <div class="row-text"><div class="row-title">Custom Time</div></div>
+      <span class="row-value" id="customTimeLabel">Select your preferred time</span>
+    </label>
+    <input type="time" id="customTimeInput" class="input" style="display:none;margin-top:8px;">
+
+    <p style="font-weight:700;font-size:13.5px;margin:18px 0 8px;">4. Review & Save</p>
+    <div class="card" style="display:flex;gap:10px;">
+      <div class="post-thumb"></div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13px;" id="addPreviewTitle">Stay Positive, Work Hard</div>
+        <div style="margin-top:4px;" id="addPreviewTags"><span class="chip">#Motivation</span><span class="chip">#Inspiration</span></div>
+      </div>
+    </div>
+    <p style="font-size:11.5px;color:var(--text-secondary);margin-top:10px;" id="addReminderNote">⏰ You will get a reminder at the scheduled time on the selected date.</p>
+  </div>
+  <div style="padding:18px 20px;position:sticky;bottom:0;background:#fff;">
+    <button class="btn btn-primary" onclick="saveToCalendar()">Save to Calendar</button>
+  </div>
+</div>
+
+<!-- ================= PROFILE ================= -->
+<div class="screen" id="screen-profile">
+  <div class="topbar">
+    <div class="logo"><img src="/logo.png" class="logo-mark" alt="ShareKit">ShareKit</div>
+    <button class="bell-btn" onclick="toast('No new notifications')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="bell-dot"></span>
+    </button>
+  </div>
+
+  <div class="section" style="padding-top:4px;">
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div class="avatar">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:15px;">Hello, Creator 👋</div>
+        <div style="font-size:12.5px;color:var(--pro);font-weight:600;">@creatorofficial</div>
+        <div style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">ShareChat Creator <span style="color:#3B82F6;">✓</span></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="toast('Edit profile (demo)')">Edit Profile</button>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0;">
+    <div id="profilePlanBanner" style="border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px;background:var(--gradient);color:#fff;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 3l4 9h4l4-9-6 5-2-5-2 5-6-5z"/></svg>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14px;" id="profPlanTitle">You're on Free Plan</div>
+        <div style="font-size:11.5px;opacity:0.9;" id="profPlanSub">Upgrade to Pro and unlock all features.</div>
+      </div>
+      <button class="btn btn-white btn-sm" id="profPlanBtn" onclick="showScreen('screen-subscription')">Upgrade Now</button>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0;">
+    <p style="font-weight:700;font-size:14px;margin:6px 0 8px;">Account</p>
+    <div class="card" style="padding:4px 12px;">
+      <div class="row" onclick="toast('Account info (demo)')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">👤</div>
+        <div class="row-text"><div class="row-title">Account Information</div><div class="row-sub">View and update your personal details</div></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="showScreen('screen-subscription')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">🛡️</div>
+        <div class="row-text"><div class="row-title">Subscription Plan</div><div class="row-sub">Manage your plan and billing</div></div>
+        <span class="badge-gray" id="subPlanBadge">Free Plan</span>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="toast('No transactions yet (demo)')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">💳</div>
+        <div class="row-text"><div class="row-title">Payment History</div><div class="row-sub">View all transactions and invoices</div></div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0;">
+    <p style="font-weight:700;font-size:14px;margin:6px 0 8px;">Preferences</p>
+    <div class="card" style="padding:4px 12px;">
+      <div class="row" onclick="toast('App settings (demo)')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">⚙️</div>
+        <div class="row-text"><div class="row-title">App Settings</div><div class="row-sub">Customize app experience</div></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="openLanguageSheet()" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">🌐</div>
+        <div class="row-text"><div class="row-title">Language</div><div class="row-sub">Choose your preferred language</div></div>
+        <span class="row-value" id="profLanguageValue">English</span>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="toast('Notification settings (demo)')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">🔔</div>
+        <div class="row-text"><div class="row-title">Notifications</div><div class="row-sub">Manage push notifications & reminders</div></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="toast('Dark mode coming soon')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">🎨</div>
+        <div class="row-text"><div class="row-title">Appearance</div><div class="row-sub">Light mode</div></div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0;">
+    <p style="font-weight:700;font-size:14px;margin:6px 0 8px;">Support & Others</p>
+    <div class="card" style="padding:4px 12px;">
+      <div class="row pro-gate" onclick="handleSupportTap()" style="cursor:pointer;">
+        <div class="icon-circle tint-pink" style="width:36px;height:36px;font-size:15px;">🎧</div>
+        <div class="row-text"><div class="row-title">AI Support Assistant <span class="badge-pro">Pro</span></div><div class="row-sub">Get help and answer from our AI assistant</div></div>
+        <span class="lock-icon" id="supportLockIcon">🔒</span>
+      </div>
+      <div class="row" onclick="showScreen('screen-faq')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">❓</div>
+        <div class="row-text"><div class="row-title">Help & FAQ</div><div class="row-sub">Find answers to common questions</div></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="showScreen('screen-legal');setLegal('privacy')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">🛡️</div>
+        <div class="row-text"><div class="row-title">Privacy Policy</div><div class="row-sub">Know how we protect your data</div></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="showScreen('screen-legal');setLegal('terms')" style="cursor:pointer;">
+        <div class="icon-circle tint-purple" style="width:36px;height:36px;font-size:15px;">📄</div>
+        <div class="row-text"><div class="row-title">Terms & Conditions</div><div class="row-sub">Read our terms and conditions</div></div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="row" onclick="doLogout()" style="cursor:pointer;color:#EF4444;">
+        <div class="icon-circle tint-red" style="width:36px;height:36px;font-size:15px;">↪️</div>
+        <div class="row-text"><div class="row-title" style="color:#EF4444;">Logout</div><div class="row-sub">Sign out from your account</div></div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:var(--text-secondary);margin:16px 0 6px;">App Version 1.0.0</p>
+</div>
+
+<!-- ================= SUPPORT ASSISTANT (simple chat stub) ================= -->
+<div class="screen" id="screen-support">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">AI Support Assistant</div>
+  </div>
+  <div style="padding:16px 20px;">
+    <div class="card-surface" style="margin-bottom:14px;">
+      <div style="font-size:13.5px;line-height:1.5;">👋 Hi! I'm your ShareKit AI assistant. Ask me anything about growing on ShareChat — best practices, content ideas, or how to use ShareKit's tools.</div>
+    </div>
+    <div id="supportChatLog"></div>
+  </div>
+  <div style="padding:12px 20px;position:sticky;bottom:0;background:#fff;display:flex;gap:8px;">
+    <input class="input" id="supportInput" style="padding-left:14px;" placeholder="Ask something..." onkeydown="if(event.key==='Enter')sendSupportMsg()">
+    <button id="supportSendBtn" class="btn btn-primary" style="width:52px;padding:0;flex-shrink:0;" onclick="sendSupportMsg()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ================= HELP & FAQ ================= -->
+<div class="screen" id="screen-faq">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">Help & FAQ</div>
+  </div>
+  <div style="padding:14px 20px;" id="faqList"></div>
+</div>
+
+<!-- ================= LEGAL (Privacy/Terms stub) ================= -->
+<div class="screen" id="screen-legal">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="showScreen('screen-profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title" id="legalTitle">Privacy Policy</div>
+  </div>
+  <div style="padding:16px 20px;font-size:13px;color:var(--text-secondary);line-height:1.7;" id="legalBody"></div>
+</div>
+
+<!-- ================= SUBSCRIPTION PLAN ================= -->
+<div class="screen" id="screen-subscription">
+  <div class="topbar-back">
+    <button class="back-btn" onclick="goBackFromSub()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="topbar-title">Subscription Plan</div>
+  </div>
+
+  <div class="section" style="padding-top:8px;display:flex;align-items:center;gap:10px;">
+    <div style="flex:1;">
+      <h1 style="font-size:21px;font-weight:800;line-height:1.25;margin:0;">Unlock Your Full Creator <span class="gtext">Potential</span></h1>
+      <p style="font-size:12.5px;color:var(--text-secondary);margin:8px 0 0;">Go Pro and get unlimited access to all premium features.</p>
+    </div>
+    <div style="font-size:56px;flex-shrink:0;">👑</div>
+  </div>
+
+  <div class="section" style="padding-top:10px;display:flex;gap:10px;">
+    <div class="card" style="flex:1;">
+      <div style="font-weight:800;font-size:16px;">Free</div>
+      <div style="font-weight:800;font-size:19px;color:var(--pro);margin:4px 0 8px;">₹0 <span style="font-size:11px;font-weight:500;color:var(--text-secondary);">/ forever</span></div>
+      <span class="badge-gray" style="display:inline-block;margin-bottom:14px;">Best for getting started</span>
+      <button class="btn btn-outline" id="freeCardBtn">Current Plan</button>
+    </div>
+    <div class="card" style="flex:1;position:relative;border:1.5px solid var(--pro);">
+      <div class="badge-mostpopular">Most Popular</div>
+      <div style="font-weight:800;font-size:16px;">Pro 💎</div>
+      <div style="font-weight:800;font-size:19px;color:var(--pro);margin:4px 0 8px;">₹199 <span style="font-size:11px;font-weight:500;color:var(--text-secondary);">/ month</span></div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:14px;height:14px;">Everything you need to grow faster</div>
+      <button class="btn btn-primary" id="proCardBtn" onclick="startUpgrade()">Upgrade to Pro</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card" style="padding:14px 12px;">
+      <p style="font-weight:800;font-size:14px;margin:2px 4px 8px;">Compare Features</p>
+      <table class="compare-table">
+        <tbody id="compareTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <p style="color:var(--pro);font-weight:800;font-size:14.5px;margin:4px 0 10px;">Loved by 10,000+ Creators</p>
+    <div class="testimonial-track" id="testimonialTrack"></div>
+    <div class="dots-row" id="testimonialDots"></div>
+  </div>
+
+  <div class="section">
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">🛡️</span>
+        <div>
+          <div style="font-weight:700;font-size:13px;">Secure & Hassle-free Payments</div>
+          <div style="font-size:11px;color:var(--text-secondary);">Cancel anytime. No hidden charges.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:11px;font-weight:700;color:var(--text-secondary);">
+        <span>UPI</span><span>VISA</span><span>Mastercard</span><span>RuPay</span>
+      </div>
+    </div>
+  </div>
+  <div style="height:10px;"></div>
+</div>
+
+<!-- ================= BOTTOM NAV ================= -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="nav-item" data-nav="screen-dashboard" onclick="showScreen('screen-dashboard')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/><path d="M9 21V12h6v9"/></svg>
+    Home
+  </button>
+  <button class="nav-item" data-nav="screen-create1" onclick="startCreateFlow()">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+    Create
+  </button>
+  <button class="nav-fab" onclick="startCreateFlow()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button class="nav-item" data-nav="screen-calendar" onclick="showScreen('screen-calendar');renderCalendar();">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    Calendar
+  </button>
+  <button class="nav-item" data-nav="screen-profile" onclick="showScreen('screen-profile')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    Profile
+  </button>
+</div>
+
+<!-- ================= TOAST CONTAINER ================= -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ================= UPGRADE PROMPT SHEET ================= -->
+<div class="sheet-overlay" id="upgradeSheetOverlay" onclick="if(event.target===this)closeSheet('upgradeSheetOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div style="text-align:center;">
+      <div style="font-size:40px;">🔒</div>
+      <h3 style="font-size:16px;font-weight:800;margin:10px 0 6px;" id="upgradeSheetTitle">This is a Pro feature</h3>
+      <p style="font-size:13px;color:var(--text-secondary);margin:0 0 18px;" id="upgradeSheetDesc">Upgrade to Pro to unlock this feature and more.</p>
+    </div>
+    <button class="btn btn-primary" onclick="closeSheet('upgradeSheetOverlay');showScreen('screen-subscription')">Upgrade to Pro</button>
+    <button class="btn" style="background:none;color:var(--text-secondary);margin-top:6px;" onclick="closeSheet('upgradeSheetOverlay')">Maybe Later</button>
+  </div>
+</div>
+
+<!-- ================= PAYMENT PROCESSING SHEET ================= -->
+<div class="sheet-overlay" id="paySheetOverlay">
+  <div class="sheet" style="text-align:center;">
+    <svg width="54" height="54" viewBox="0 0 24 24" fill="none" class="spin" style="margin:10px auto;display:block;">
+      <circle cx="12" cy="12" r="9" stroke="#EDE9FE" stroke-width="3"/>
+      <path d="M21 12a9 9 0 00-9-9" stroke="#7C3AED" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h3 style="font-size:15px;font-weight:800;margin:8px 0 4px;">Processing payment via Razorpay...</h3>
+    <p style="font-size:12.5px;color:var(--text-secondary);">Please don't close this window.</p>
+  </div>
+</div>
+
+<!-- ================= LANGUAGE PICKER SHEET ================= -->
+<div class="sheet-overlay" id="langSheetOverlay" onclick="if(event.target===this)closeSheet('langSheetOverlay')">
+  <div class="sheet" style="max-height:70vh;overflow-y:auto;">
+    <div class="sheet-handle"></div>
+    <h3 style="font-size:15px;font-weight:800;margin:0 0 12px;">Choose your language</h3>
+    <div id="langOptionsList"></div>
+  </div>
+</div>
+
+<!-- ================= DOWNLOAD COMPLETE MODAL ================= -->
+<div class="sheet-overlay" id="downloadCompleteOverlay">
+  <div class="sheet" style="text-align:center;max-height:88vh;overflow-y:auto;">
+    <div class="sheet-handle"></div>
+    <div style="width:56px;height:56px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;margin:4px auto 10px;font-size:26px;">✅</div>
+    <h3 style="font-size:17px;font-weight:800;margin:0 0 4px;">Download Complete!</h3>
+    <p style="font-size:12.5px;color:var(--text-secondary);margin:0;">Your content is ready to use</p>
+
+    <p style="text-align:left;font-weight:700;font-size:13px;margin:18px 0 0;">Quick Actions</p>
+    <div class="quick-actions-grid">
+      <button class="quick-action-mini" onclick="openImageLightbox()">
+        <div class="icon-circle tint-green" style="width:36px;height:36px;font-size:15px;">🖼️</div>
+        <span class="label">Open Image</span><span class="sub">View full image</span>
+      </button>
+      <button class="quick-action-mini" onclick="copyPart('caption')">
+        <div class="icon-circle tint-pink" style="width:36px;height:36px;font-size:15px;">✏️</div>
+        <span class="label">Copy Caption</span><span class="sub">Copy to clipboard</span>
+      </button>
+      <button class="quick-action-mini" onclick="copyPart('keywords')">
+        <div class="icon-circle tint-blue" style="width:36px;height:36px;font-size:15px;">🔑</div>
+        <span class="label">Copy Keywords</span><span class="sub">Copy to clipboard</span>
+      </button>
+      <button class="quick-action-mini" onclick="copyPart('hashtags')">
+        <div class="icon-circle tint-green" style="width:36px;height:36px;font-size:15px;">#</div>
+        <span class="label">Copy Hashtags</span><span class="sub">Copy to clipboard</span>
+      </button>
+      <button class="quick-action-mini" onclick="scheduleReminderFromDownload()">
+        <span class="mini-pro">Pro</span>
+        <div class="icon-circle tint-orange" style="width:36px;height:36px;font-size:15px;">🔔</div>
+        <span class="label">Schedule Reminder</span><span class="sub">Get reminded</span>
+      </button>
+      <button class="quick-action-mini" onclick="openShareChat()">
+        <div class="icon-circle round" style="width:36px;height:36px;font-size:15px;background:var(--gradient);">💬</div>
+        <span class="label">Open ShareChat</span><span class="sub">Open the app</span>
+      </button>
+    </div>
+
+    <button class="btn btn-primary" onclick="closeSheet('downloadCompleteOverlay')">Done</button>
+    <p style="font-size:11px;color:var(--text-secondary);margin:10px 0 4px;">🕐 Content saved in History</p>
+  </div>
+</div>
+
+<!-- ================= IMAGE LIGHTBOX ================= -->
+<div class="sheet-overlay" id="imageLightboxOverlay" onclick="if(event.target===this)closeSheet('imageLightboxOverlay')" style="align-items:center;">
+  <div style="max-width:92%;">
+    <img id="lightboxImg" src="" alt="Generated image" style="width:100%;border-radius:16px;display:block;">
+    <button class="btn btn-white" style="margin-top:12px;" onclick="closeSheet('imageLightboxOverlay')">Close</button>
+  </div>
+</div>
+
+</div><!-- /app-shell -->
+
+<script>
+/* ============================================================
+   SHAREKIT PROTOTYPE — APPLICATION STATE
+   ============================================================ */
+const CONTENT_TYPES = ['Motivation','Comedy','Devotional','Romantic','News','Dance','Cooking','Shayari'];
+const TONES = ['Positive','Funny','Emotional','Motivational','Informative'];
+const LANGUAGES = ['English','Hindi','Tamil','Telugu','Bengali','Marathi','Kannada','Gujarati','Punjabi','Malayalam','Odia','Assamese','Bhojpuri','Rajasthani','Haryanvi','Urdu','Sanskrit','Konkani','Maithili','Chhattisgarhi'];
+
+const today = new Date();
+
+const state = {
+  plan: 'free',
+  aiUsedToday: 0,
+  aiLimit: 5,
+  language: 'English',
+  calYear: today.getFullYear(),
+  calMonth: today.getMonth(),
+  calSelectedDate: null,
+  calendarPosts: [
+    { id:'seed1', date: isoDate(new Date(today.getFullYear(), today.getMonth(), 15)), time:'10:00 AM', title:'Stay Positive, Work Hard', hashtags:['#Motivation','#Inspiration'], category:'Motivation', status:'scheduled' },
+    { id:'seed2', date: isoDate(new Date(today.getFullYear(), today.getMonth(), 15)), time:'07:30 PM', title:'Life is Beautiful', hashtags:['#Life','#PositiveVibes'], category:'Motivation', status:'scheduled' },
+    { id:'seed3', date: isoDate(new Date(today.getFullYear(), today.getMonth(), 20)), time:'09:00 AM', title:'Draft: Weekend recipe reel', hashtags:['#Cooking'], category:'Cooking', status:'draft' }
+  ],
+  currentDraft: null,
+  previousScreen: 'screen-dashboard'
+};
+
+let uploadSelection = null;
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const NAV_TABS = ['screen-dashboard','screen-create1','screen-calendar','screen-profile'];
+
+function showScreen(id){
+  const current = document.querySelector('.screen.active');
+  if(current && current.id !== id) state.previousScreen = current.id;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  target.classList.add('active');
+  target.scrollTop = 0;
+  window.scrollTo(0,0);
+
+  document.querySelectorAll('.nav-item').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.nav === id);
+  });
+  const bottomNav = document.getElementById('bottomNav');
+  bottomNav.style.display = NAV_TABS.includes(id) ? 'flex' : 'none';
+}
+
+function goBackFromSub(){
+  showScreen(state.previousScreen === 'screen-subscription' ? 'screen-dashboard' : state.previousScreen);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(msg, type){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' '+type : '');
+  const icon = type==='success' ? '✅' : type==='error' ? '⚠️' : 'ℹ️';
+  el.innerHTML = `<span>${icon}</span><span>${escapeHtml(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 2600);
+}
+
+/* ============================================================
+   SHEETS
+   ============================================================ */
+function showUpgradeSheet(title, desc){
+  document.getElementById('upgradeSheetTitle').textContent = title || 'This is a Pro feature';
+  document.getElementById('upgradeSheetDesc').textContent = desc || 'Upgrade to Pro to unlock this feature and more.';
+  document.getElementById('upgradeSheetOverlay').classList.add('show');
+}
+function closeSheet(id){ document.getElementById(id).classList.remove('show'); }
+
+/* ============================================================
+   DEMO PLAN TOGGLE
+   ============================================================ */
+function setPlan(plan){
+  state.plan = plan;
+  state.aiLimit = plan==='pro' ? Infinity : 5;
+  if(plan==='pro') state.aiUsedToday = 0;
+  document.getElementById('demoFreeBtn').classList.toggle('active', plan==='free');
+  document.getElementById('demoProBtn').classList.toggle('active', plan==='pro');
+  refreshPlanDependentUI();
+}
+
+function resetApp(){
+  state.plan='free'; state.aiUsedToday=0; state.aiLimit=5; state.language='English';
+  state.currentDraft=null; state.calSelectedDate=null;
+  setPlan('free');
+  document.getElementById('loginEmail') && (document.getElementById('loginEmail').value='');
+  showScreen('screen-welcome');
+  toast('App state reset');
+}
+
+function doLogout(){
+  toast('Logged out');
+  resetApp();
+}
+
+function refreshPlanDependentUI(){
+  updateDashboardCredits();
+
+  // Dashboard "Upgrade" chip + Auto Creator lock overlay
+  document.getElementById('dashUpgradeChip').style.display = state.plan==='pro' ? 'none' : 'flex';
+  document.querySelectorAll('.pro-gate .lock-overlay, .icon-circle .lock-overlay').forEach(el=>{});
+  document.querySelectorAll('.quick-card .lock-overlay').forEach(el=> el.style.display = state.plan==='pro' ? 'none' : 'flex');
+  document.querySelectorAll('.pro-mini .lock-overlay').forEach(el=> el.style.display = state.plan==='pro' ? 'none' : 'flex');
+
+  // Support lock icon
+  document.getElementById('supportLockIcon').style.display = state.plan==='pro' ? 'none' : 'inline';
+
+  // Profile plan banner
+  const banner = document.getElementById('profilePlanBanner');
+  const title = document.getElementById('profPlanTitle');
+  const sub = document.getElementById('profPlanSub');
+  const btn = document.getElementById('profPlanBtn');
+  const badge = document.getElementById('subPlanBadge');
+  if(state.plan==='pro'){
+    banner.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+    title.textContent = "You're on Pro Plan 💎";
+    sub.textContent = "Thanks for supporting ShareKit. Enjoy unlimited access.";
+    btn.textContent = 'Manage Plan';
+    badge.textContent = 'Pro Plan';
+  } else {
+    banner.style.background = 'linear-gradient(135deg,#7C3AED,#EC4899)';
+    title.textContent = "You're on Free Plan";
+    sub.textContent = "Upgrade to Pro and unlock all features.";
+    btn.textContent = 'Upgrade Now';
+    badge.textContent = 'Free Plan';
+  }
+
+  // Subscription page buttons
+  const freeBtn = document.getElementById('freeCardBtn');
+  const proBtn = document.getElementById('proCardBtn');
+  if(freeBtn && proBtn){
+    if(state.plan==='free'){
+      freeBtn.textContent='Current Plan'; freeBtn.className='btn btn-outline'; freeBtn.disabled=false; freeBtn.onclick=null;
+      proBtn.textContent='Upgrade to Pro'; proBtn.className='btn btn-primary'; proBtn.onclick=startUpgrade;
+    } else {
+      freeBtn.textContent='Downgrade'; freeBtn.className='btn btn-outline-dark'; freeBtn.onclick=function(){ setPlan('free'); toast('Downgraded to Free plan'); };
+      proBtn.textContent='Current Plan ✓'; proBtn.className='btn btn-primary'; proBtn.onclick=null;
+    }
+  }
+
+  populateSelectOptions();
+  renderCalendar();
+  if(document.getElementById('screen-calendar').classList.contains('active')) renderSelectedPanel();
+}
+
+function updateDashboardCredits(){
+  const textEl = document.getElementById('dashCreditsText');
+  const fillEl = document.getElementById('dashProgressFill');
+  const resetEl = document.getElementById('dashResetText');
+  if(state.plan==='pro'){
+    textEl.textContent = 'Unlimited ✨';
+    fillEl.style.width = '100%';
+    fillEl.classList.remove('danger');
+    resetEl.textContent = 'Pro plan';
+  } else {
+    const remaining = Math.max(0, state.aiLimit - state.aiUsedToday);
+    textEl.textContent = `${remaining} / ${state.aiLimit}`;
+    const pct = (remaining/state.aiLimit)*100;
+    fillEl.style.width = pct+'%';
+    fillEl.classList.toggle('danger', remaining===0);
+    resetEl.textContent = 'Reset in 24h';
+  }
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function togglePw(id, btn){
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function checkPwStrength(){
+  const pw = document.getElementById('suPassword').value;
+  const pw2 = document.getElementById('suPassword2').value;
+  const lenOk = pw.length >= 8;
+  const numOk = /[0-9]/.test(pw) || /[^A-Za-z0-9]/.test(pw);
+  const matchOk = pw.length>0 && pw === pw2;
+  setCheck('pwLen', lenOk); setCheck('pwNum', numOk); setCheck('pwMatch', matchOk);
+  document.getElementById('signupBtn').disabled = !(lenOk && numOk && matchOk && document.getElementById('suName').value.trim() && document.getElementById('suEmail').value.trim());
+}
+function setCheck(id, ok){
+  const el = document.getElementById(id);
+  el.classList.toggle('ok', ok);
+  el.querySelector('.dot').textContent = ok ? '✓' : '•';
+}
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPassword').value;
+  if(!email || !pw){ toast('Please enter email and password','error'); return; }
+  showScreen('screen-dashboard');
+  toast('Welcome back! 👋','success');
+}
+
+function doSignup(){
+  checkPwStrength();
+  if(document.getElementById('signupBtn').disabled){ toast('Please complete all fields correctly','error'); return; }
+  showScreen('screen-dashboard');
+  toast('Account created! Welcome to ShareKit 🎉','success');
+}
+
+/* ============================================================
+   CREATE CONTENT FLOW
+   ============================================================ */
+function updateCharCount(){
+  const val = document.getElementById('createTopic').value;
+  document.getElementById('charCountNum').textContent = val.length;
+}
+
+function toggleUpload(el){
+  const row = el.parentElement;
+  [...row.children].forEach(c=>{ if(c!==el) c.classList.remove('selected'); });
+  el.classList.toggle('selected');
+}
+
+function startCreateFlow(prefillTopic){
+  if(state.plan==='free' && state.aiUsedToday >= state.aiLimit){
+    showUpgradeSheet('Daily limit reached', "You've used all 5 free AI creations today. Upgrade to Pro for unlimited access.");
+    return;
+  }
+  showScreen('screen-create1');
+  const ta = document.getElementById('createTopic');
+  ta.value = prefillTopic || '';
+  updateCharCount();
+}
+
+function goCreateStep2(){
+  showScreen('screen-create2');
+}
+
+function handleAdvancedOptionsTap(){
+  if(state.plan==='free'){
+    showUpgradeSheet('Advanced Options', 'Unlock target audience, keyword focus and content length controls with Pro.');
+  } else {
+    toast('Advanced options applied ✅','success');
+  }
+}
+
+function generateContent(){
+  if(state.plan==='free' && state.aiUsedToday >= state.aiLimit){
+    showUpgradeSheet('Daily limit reached', "You've used all 5 free AI creations today. Upgrade to Pro for unlimited access.");
+    return;
+  }
+  const topic = document.getElementById('createTopic').value.trim() || 'your next post';
+  const contentType = document.getElementById('prefContentType').value;
+  const tone = document.getElementById('prefTone').value;
+  const language = document.getElementById('prefLanguage').value;
+
+  const btn = document.getElementById('genContentBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="spin"><circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,.35)" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg> Generating...';
+  btn.disabled = true;
+
+  setTimeout(()=>{
+    const pack = buildContentPack(topic, contentType, tone, language);
+    state.currentDraft = { ...pack, topic, contentType, tone, language, imageUrl:null };
+    if(state.plan==='free'){ state.aiUsedToday++; updateDashboardCredits(); }
+    renderResultsList(pack, 'createResultsList');
+    renderImageBlock(topic);
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    showScreen('screen-create3');
+  }, 700);
+}
+
+// NOTE: this uses a seeded placeholder photo to simulate "AI Image
+// Generation" in this offline prototype. Once the backend is wired up,
+// replace the body of this function with a real call to POST /api/generate-image
+// (FLUX.2 Klein 4B via OpenRouter — see api/generate-image.js), which already
+// exists and is Pro-gated with a 30/month limit matching the budget plan.
+function renderImageBlock(topic){
+  const block = document.getElementById('createImageBlock');
+  if(state.plan !== 'pro'){
+    block.innerHTML = `<div class="gen-image-wrap"><div class="gen-image-locked">🔒<br><b>AI Image Generation</b><br>Upgrade to Pro to generate a matching image for every post.</div></div>`;
+    return;
+  }
+  block.innerHTML = `<div class="gen-image-wrap"><div class="gen-image-skeleton"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="spin"><circle cx="12" cy="12" r="9" stroke="#DCD6FB" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="#7C3AED" stroke-width="3" stroke-linecap="round"/></svg>Generating image...</div></div>`;
+  const seed = encodeURIComponent(topic.slice(0,40) + Math.floor(Math.random()*99999));
+  const url = `https://picsum.photos/seed/${seed}/800/500`;
+  const img = new Image();
+  img.onload = () => {
+    if(state.currentDraft) state.currentDraft.imageUrl = url;
+    block.innerHTML = `<div class="gen-image-wrap"><span class="gen-image-label">Generated Image</span><button class="gen-image-expand" onclick="openImageLightbox()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button><img src="${url}" alt="Generated"></div>`;
+  };
+  img.onerror = () => {
+    block.innerHTML = `<div class="gen-image-wrap"><div class="gen-image-locked">Image preview unavailable right now.</div></div>`;
+  };
+  img.src = url;
+}
+
+function openImageLightbox(){
+  if(!state.currentDraft?.imageUrl){ toast('No image for this content yet'); return; }
+  document.getElementById('lightboxImg').src = state.currentDraft.imageUrl;
+  document.getElementById('imageLightboxOverlay').classList.add('show');
+}
+
+function copyToClipboard(text, label){
+  const done = () => toast(`${label} copied ✅`, 'success');
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch{ toast('Could not copy — select and copy manually','error'); }
+  document.body.removeChild(ta);
+}
+
+function copyPart(type){
+  if(!state.currentDraft){ toast('Nothing to copy yet','error'); return; }
+  if(type==='caption') copyToClipboard(state.currentDraft.captions[0], 'Caption');
+  else if(type==='keywords') copyToClipboard(state.currentDraft.keywords.join(', '), 'Keywords');
+  else if(type==='hashtags') copyToClipboard(state.currentDraft.hashtags.join(' '), 'Hashtags');
+}
+
+function downloadContent(){
+  if(!state.currentDraft){ toast('Nothing to download yet','error'); return; }
+  const d = state.currentDraft;
+  const text = `CAPTIONS\n${d.captions.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n\nKEYWORDS\n${d.keywords.join(', ')}\n\nHASHTAGS\n${d.hashtags.join(' ')}\n\nBEST POSTING TIME\n${d.bestTime}\n\n— Generated with ShareKit`;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'sharekit-content.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  if(d.imageUrl){
+    const imgLink = document.createElement('a');
+    imgLink.href = d.imageUrl; imgLink.download = 'sharekit-image.jpg'; imgLink.target = '_blank';
+    document.body.appendChild(imgLink); imgLink.click(); document.body.removeChild(imgLink);
+  }
+  document.getElementById('downloadCompleteOverlay').classList.add('show');
+}
+
+function scheduleReminderFromDownload(){
+  if(state.plan!=='pro'){
+    showUpgradeSheet('Smart Reminders', 'Get notified exactly when it\'s time to post. Available on Pro.');
+    return;
+  }
+  closeSheet('downloadCompleteOverlay');
+  goScheduleFromCreate();
+}
+
+function openShareChat(){
+  window.open('https://sharechat.com/', '_blank');
+}
+
+function goScheduleFromCreate(){
+  if(!state.currentDraft){ toast('Nothing to schedule yet','error'); return; }
+  showScreen('screen-calendar-add');
+  document.getElementById('addDate').value = isoDate(today);
+  document.getElementById('addPreviewTitle').textContent = state.currentDraft.captions[0];
+  document.getElementById('addPreviewTags').innerHTML = state.currentDraft.hashtags.slice(0,3).map(h=>`<span class="chip">${h}</span>`).join('');
+  document.querySelectorAll('input[name="bestTime"]')[0].checked = true;
+  toggleCustomTime(false);
+}
+
+/* ============================================================
+   CONTENT GENERATION ENGINE (template-based, original text)
+   ============================================================ */
+function buildContentPack(topic, contentType, tone, language){
+  const t = topic.toLowerCase().replace(/[.!?]+$/,'');
+  const captionPool = [
+    `${topic}. Every day is a new chance to grow — keep going! 💪`,
+    `Some days are hard, but staying focused on ${t} keeps me moving forward. Who else feels this? 🙌`,
+    `Real talk: ${t} isn't just a phase, it's a mindset. Save this for later ✨`,
+    `Tag someone who needs to hear this about ${t} today 👇`,
+    `This is your sign to focus on ${t} starting now. Let's go! 🔥`,
+    `${topic}. That's it. That's the caption. 😌`,
+    `POV: you finally understood why ${t} matters. Drop a ❤️ if you relate.`,
+    `Small steps toward ${t} still count as progress. Don't stop. 🚀`
+  ];
+  const keywordPool = [
+    `${t} content ideas`,'ShareChat trending','viral reels India','creator tips','daily motivation',
+    'regional content','audience growth','engagement boost','trending topics India','short video ideas',
+    'caption ideas','hashtag strategy','vernacular content','ShareChat creators','reels script ideas','best time to post'
+  ];
+  const tagBase = t.replace(/\s+/g,'').replace(/[^a-zA-Z0-9]/g,'');
+  const hashtagPool = [
+    `#${tagBase.charAt(0).toUpperCase()+tagBase.slice(1)}`,'#ShareChat','#Trending','#ViralReels','#IndianCreator',
+    '#Motivation','#ContentCreator','#Reels','#TrendingNow','#DesiCreator','#ShareChatIndia','#CreatorLife',
+    '#ExplorePage','#DailyMotivation','#IndianContent','#GrowWithShareKit'
+  ];
+  const timeOptions = ['Today, 6:30 PM','Today, 7:30 PM','Today, 8:15 PM','Tomorrow, 9:00 AM','Tomorrow, 7:00 PM'];
+
+  const langSuffix = language && language !== 'English' ? ` (${language})` : '';
+
+  return {
+    captions: pickRandomN(captionPool, 3).map(c => c + langSuffix),
+    keywords: pickRandomN(keywordPool, 12),
+    hashtags: pickRandomN(hashtagPool, Math.min(15, hashtagPool.length)),
+    bestTime: timeOptions[Math.floor(Math.random()*timeOptions.length)]
+  };
+}
+
+function pickRandomN(arr, n){
+  const copy = [...arr];
+  for(let i=copy.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [copy[i],copy[j]]=[copy[j],copy[i]]; }
+  while(copy.length < n) copy.push(...arr);
+  return copy.slice(0,n);
+}
+
+function renderResultsList(pack, containerId){
+  const html = `
+    <div class="copy-card">
+      <div class="copy-card-head">
+        <div class="icon-circle tint-pink" style="width:34px;height:34px;font-size:14px;">✏️</div>
+        <span class="copy-card-title">Captions</span>
+        <span class="copy-card-badge">${pack.captions.length}</span>
+        <button class="copy-btn" onclick="copyToClipboard(${jsStr(pack.captions[0])}, 'Caption')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Caption
+        </button>
+      </div>
+      <div class="copy-card-body" id="${containerId}-cap-body">${escapeHtml(pack.captions[0])}</div>
+      <div class="copy-card-expand" onclick="toggleCopyCard('${containerId}-cap-body', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+
+    <div class="copy-card">
+      <div class="copy-card-head">
+        <div class="icon-circle tint-blue" style="width:34px;height:34px;font-size:14px;">🔑</div>
+        <span class="copy-card-title">Keywords</span>
+        <span class="copy-card-badge">${pack.keywords.length}</span>
+        <button class="copy-btn" onclick="copyToClipboard(${jsStr(pack.keywords.join(', '))}, 'Keywords')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Keywords
+        </button>
+      </div>
+      <div class="copy-card-body" id="${containerId}-kw-body">${escapeHtml(pack.keywords.join(', '))}</div>
+      <div class="copy-card-expand" onclick="toggleCopyCard('${containerId}-kw-body', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+
+    <div class="copy-card">
+      <div class="copy-card-head">
+        <div class="icon-circle tint-green" style="width:34px;height:34px;font-size:14px;">#</div>
+        <span class="copy-card-title">Hashtags</span>
+        <span class="copy-card-badge">${pack.hashtags.length}</span>
+        <button class="copy-btn" onclick="copyToClipboard(${jsStr(pack.hashtags.join(' '))}, 'Hashtags')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Hashtags
+        </button>
+      </div>
+      <div class="copy-card-body" id="${containerId}-tag-body">${escapeHtml(pack.hashtags.join(' '))}</div>
+      <div class="copy-card-expand" onclick="toggleCopyCard('${containerId}-tag-body', this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+
+    <div class="row" style="border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div class="icon-circle tint-orange" style="width:34px;height:34px;font-size:14px;">🕐</div>
+      <div class="row-text"><div class="row-title" style="font-size:13px;">Best Posting Time</div><div class="row-sub">${escapeHtml(pack.bestTime)}</div></div>
+      <button style="background:none;border:none;color:var(--pro);font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:4px;" onclick="showScreen('screen-calendar');renderCalendar();">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        View Calendar
+      </button>
+    </div>
+  `;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// Safely embeds a JS string literal inside an inline onclick="" attribute.
+function jsStr(str){
+  return "'" + String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'";
+}
+
+function toggleCopyCard(bodyId, arrowEl){
+  const body = document.getElementById(bodyId);
+  body.classList.toggle('expanded');
+  arrowEl.style.transform = body.classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+/* ============================================================
+   AI AUTO CREATOR FLOW
+   ============================================================ */
+function openAutoCreator(){
+  if(state.plan==='free'){
+    showUpgradeSheet('AI Auto Creator', 'One tap to generate captions, keywords, hashtags and schedule your post. Available on Pro.');
+    return;
+  }
+  showScreen('screen-auto1');
+}
+
+function startAutoCreatorWorking(){
+  showScreen('screen-auto2');
+  document.querySelectorAll('#autoChecklist .check-list-item').forEach(item=>{
+    item.querySelector('.ci-icon').textContent = '⏳';
+  });
+  const items = document.querySelectorAll('#autoChecklist .check-list-item');
+  items.forEach((item, idx)=>{
+    setTimeout(()=>{
+      item.querySelector('.ci-icon').textContent = '✅';
+    }, 450*(idx+1));
+  });
+  setTimeout(()=>{ finishAutoCreator(); }, 450*items.length + 500);
+}
+
+function finishAutoCreator(){
+  const topic = document.getElementById('autoTopic').value.trim() || 'Motivational content';
+  const contentType = document.getElementById('autoContentType').value;
+  const tone = document.getElementById('autoTone').value;
+  const pack = buildContentPack(topic, contentType, tone, 'English');
+  state.currentDraft = { ...pack, topic, contentType, tone, language:'English' };
+
+  const schedDate = new Date();
+  schedDate.setDate(schedDate.getDate() + 1);
+  schedDate.setHours(10,30,0,0);
+  const dateStr = isoDate(schedDate);
+  const label = formatDateLabel(schedDate) + ' at 10:30 AM';
+
+  state.calendarPosts.push({
+    id: uid(), date: dateStr, time:'10:30 AM', title: pack.captions[0],
+    hashtags: pack.hashtags.slice(0,3), category: contentType, status:'scheduled'
+  });
+
+  document.getElementById('autoScheduledText').textContent = label;
+  renderResultsList(pack, 'autoResultsList');
+  showScreen('screen-auto3');
+}
+
+/* ============================================================
+   DASHBOARD PRO-MINI / SUPPORT GATES
+   ============================================================ */
+function handleProMiniTap(name){
+  if(state.plan==='free'){
+    showUpgradeSheet(name, `Unlock ${name} and more with ShareKit Pro.`);
+    return;
+  }
+  const tips = {
+    'Best Posting Time': 'Evenings 7–9 PM work best for your niche based on regional creator patterns.',
+    'Smart Reminders': 'Reminders are on. You will be notified at your scheduled posting times.',
+    'AI Memory': `ShareKit remembers: ${state.language}, your usual tone, and your niche preferences.`,
+    'AI Support Assistant': 'Opening AI Support Assistant...'
+  };
+  if(name==='AI Support Assistant'){ showScreen('screen-support'); return; }
+  toast(tips[name] || 'Feature enabled', 'success');
+}
+
+function handleSupportTap(){
+  if(state.plan==='free'){
+    showUpgradeSheet('AI Support Assistant', 'Chat with our AI assistant for ShareChat growth tips. Available on Pro.');
+    return;
+  }
+  showScreen('screen-support');
+}
+
+function sendSupportMsg(){
+  const input = document.getElementById('supportInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  appendChatBubble(msg, 'user');
+  input.value = '';
+  setTimeout(()=>{ appendChatBubble(getAssistantReply(msg), 'ai'); }, 500);
+}
+
+function appendChatBubble(text, who){
+  const log = document.getElementById('supportChatLog');
+  const div = document.createElement('div');
+  div.style.margin = '10px 0';
+  div.style.display = 'flex';
+  div.style.justifyContent = who==='user' ? 'flex-end' : 'flex-start';
+  div.innerHTML = `<div style="max-width:80%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.4;${who==='user' ? 'background:var(--gradient);color:#fff;border-bottom-right-radius:4px;' : 'background:#F3F4F6;color:var(--text-primary);border-bottom-left-radius:4px;'}">${escapeHtml(text)}</div>`;
+  log.appendChild(div);
+  log.scrollIntoView({behavior:'smooth', block:'end'});
+}
+
+function getAssistantReply(msg){
+  const m = msg.toLowerCase();
+  if(m.includes('time') || m.includes('when')) return "For most ShareChat creators, evenings between 7–9 PM see the strongest engagement, especially on weekends. Try the Best Posting Time tool for a recommendation tailored to your niche.";
+  if(m.includes('hashtag') || m.includes('tag')) return "Mix 3-4 broad hashtags (like #ShareChat, #Trending) with 8-10 niche-specific ones. Avoid using the same exact set every time — the algorithm favors variety.";
+  if(m.includes('grow') || m.includes('follow') || m.includes('audience')) return "Consistency matters more than frequency. Posting 4-5 times a week in your niche, with strong hooks in the first 3 seconds of reels, tends to outperform sporadic daily posting.";
+  if(m.includes('language')) return "ShareKit Pro supports 20+ Indian languages including Hindi, Tamil, Telugu, Bengali and Marathi. You can set your preferred language from your Profile.";
+  if(m.includes('hi') || m.includes('hello')) return "Hey! Ask me about posting times, hashtags, growing your audience, or how to use any ShareKit tool.";
+  return "Good question! Try being specific about what you'd like help with — posting times, hashtags, content ideas, or growing your ShareChat audience.";
+}
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function isoDate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDateLabel(d){
+  return `${MONTH_NAMES[d.getMonth()].slice(0,3)} ${d.getDate()}, ${d.getFullYear()}`;
+}
+function uid(){ return 'p'+Math.random().toString(36).slice(2,9); }
+
+function calShiftMonth(delta){
+  state.calMonth += delta;
+  if(state.calMonth < 0){ state.calMonth = 11; state.calYear--; }
+  if(state.calMonth > 11){ state.calMonth = 0; state.calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar(){
+  document.getElementById('calMonthLabel').textContent = `${MONTH_NAMES[state.calMonth]} ${state.calYear}`;
+  const isPro = state.plan==='pro';
+
+  document.getElementById('calUpgradeBanner').style.display = isPro ? 'none' : 'block';
+  document.getElementById('calLockedPanel').style.display = isPro ? 'none' : 'block';
+  document.getElementById('calAddBtnWrap').style.display = isPro ? 'block' : 'none';
+  document.getElementById('calLegend').style.display = isPro ? 'flex' : 'none';
+  if(!isPro) document.getElementById('calSelectedPanel').innerHTML = '';
+
+  const firstDow = new Date(state.calYear, state.calMonth, 1).getDay();
+  const daysThisMonth = new Date(state.calYear, state.calMonth+1, 0).getDate();
+  const daysPrevMonth = new Date(state.calYear, state.calMonth, 0).getDate();
+
+  let cells = [];
+  for(let i=firstDow-1; i>=0; i--){
+    cells.push({ day: daysPrevMonth-i, muted:true, dateObj: new Date(state.calYear, state.calMonth-1, daysPrevMonth-i) });
+  }
+  for(let d=1; d<=daysThisMonth; d++){
+    cells.push({ day:d, muted:false, dateObj: new Date(state.calYear, state.calMonth, d) });
+  }
+  while(cells.length % 7 !== 0){
+    const nextDay = cells.length - (firstDow + daysThisMonth) + 1;
+    cells.push({ day: nextDay, muted:true, dateObj: new Date(state.calYear, state.calMonth+1, nextDay) });
+  }
+
+  const todayStr = isoDate(today);
+  let html = '';
+  cells.forEach(cell=>{
+    const dateStr = isoDate(cell.dateObj);
+    const posts = state.calendarPosts.filter(p=>p.date===dateStr);
+    const hasScheduled = posts.some(p=>p.status==='scheduled');
+    const hasDraft = posts.some(p=>p.status==='draft');
+    let dot = '';
+    if(isPro && hasScheduled) dot = `<span class="dotmark" style="background:var(--success);"></span>`;
+    else if(isPro && hasDraft) dot = `<span class="dotmark" style="background:var(--warning);"></span>`;
+    const classes = ['cal-day'];
+    if(cell.muted) classes.push('muted');
+    if(dateStr===todayStr) classes.push('today');
+    if(dateStr===state.calSelectedDate) classes.push('selected');
+    html += `<button class="${classes.join(' ')}" onclick="selectCalendarDate('${dateStr}')">${cell.day}${dot}</button>`;
+  });
+  document.getElementById('calDaysGrid').innerHTML = html;
+}
+
+function selectCalendarDate(dateStr){
+  if(state.plan==='free'){
+    showUpgradeSheet('AI Content Calendar', 'Upgrade to Pro to plan, save and get reminded for your content.');
+    return;
+  }
+  state.calSelectedDate = dateStr;
+  renderCalendar();
+  renderSelectedPanel();
+}
+
+function renderSelectedPanel(){
+  if(!state.calSelectedDate){ document.getElementById('calSelectedPanel').innerHTML=''; return; }
+  const posts = state.calendarPosts.filter(p=>p.date===state.calSelectedDate).sort((a,b)=>a.time.localeCompare(b.time));
+  const d = new Date(state.calSelectedDate);
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px;">
+    <p style="font-weight:700;font-size:13.5px;margin:0;">${formatDateLabel(d)}</p>
+    <span class="badge-gray">${posts.length} Post${posts.length!==1?'s':''}</span>
+  </div>`;
+  if(posts.length===0){
+    html += `<p style="font-size:12.5px;color:var(--text-secondary);padding:10px 0;">No content planned for this date yet. Tap "+ Add New Content" below.</p>`;
+  } else {
+    posts.forEach(p=>{
+      html += `<div class="post-item">
+        <div class="post-thumb"></div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:var(--text-secondary);">${p.time}</div>
+          <div style="font-weight:600;font-size:13px;margin:2px 0 4px;">${escapeHtml(p.title)}</div>
+          <div>${p.hashtags.map(h=>`<span class="chip">${escapeHtml(h)}</span>`).join('')}<span class="chip" style="background:#FEF3C7;color:#92400E;">${escapeHtml(p.category)}</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button style="background:none;border:none;color:var(--text-secondary);" onclick="toast('Edit not available in demo')">✏️</button>
+          <button style="background:none;border:none;color:var(--text-secondary);" onclick="deletePost('${p.id}')">🗑️</button>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('calSelectedPanel').innerHTML = html;
+}
+
+function deletePost(id){
+  state.calendarPosts = state.calendarPosts.filter(p=>p.id!==id);
+  toast('Post removed');
+  renderCalendar();
+  renderSelectedPanel();
+}
+
+function openCalendarAdd(){
+  if(state.plan==='free'){
+    showUpgradeSheet('AI Content Calendar', 'Upgrade to Pro to plan, save and get reminded for your content.');
+    return;
+  }
+  showScreen('screen-calendar-add');
+  document.getElementById('addDate').value = state.calSelectedDate || isoDate(today);
+  document.querySelectorAll('input[name="bestTime"]')[0].checked = true;
+  toggleCustomTime(false);
+  if(!state.currentDraft){
+    document.getElementById('addPreviewTitle').textContent = 'Stay Positive, Work Hard';
+    document.getElementById('addPreviewTags').innerHTML = '<span class="chip">#Motivation</span><span class="chip">#Inspiration</span>';
+  }
+}
+
+function toggleCustomTime(show){
+  document.getElementById('customTimeInput').style.display = show ? 'block' : 'none';
+  if(!show) document.getElementById('customTimeLabel').textContent = 'Select your preferred time';
+}
+
+function saveToCalendar(){
+  const dateVal = document.getElementById('addDate').value || isoDate(today);
+  const useCustom = document.querySelectorAll('input[name="bestTime"]')[1].checked;
+  let time = '7:30 PM';
+  if(useCustom){
+    const t = document.getElementById('customTimeInput').value;
+    if(t){
+      const [h,m] = t.split(':');
+      const hour = parseInt(h,10);
+      const ampm = hour>=12 ? 'PM' : 'AM';
+      const hour12 = ((hour+11)%12)+1;
+      time = `${hour12}:${m} ${ampm}`;
+      document.getElementById('customTimeLabel').textContent = time;
+    }
+  }
+  const title = document.getElementById('addPreviewTitle').textContent;
+  const tags = [...document.getElementById('addPreviewTags').querySelectorAll('.chip')].map(c=>c.textContent);
+
+  state.calendarPosts.push({
+    id: uid(), date: dateVal, time, title,
+    hashtags: tags, category: (state.currentDraft && state.currentDraft.contentType) || 'General', status:'scheduled'
+  });
+
+  const d = new Date(dateVal);
+  state.calYear = d.getFullYear(); state.calMonth = d.getMonth(); state.calSelectedDate = dateVal;
+
+  toast('Content saved to calendar','success');
+  showScreen('screen-calendar');
+  renderCalendar();
+  renderSelectedPanel();
+}
+
+/* ============================================================
+   LANGUAGE PICKER
+   ============================================================ */
+function openLanguageSheet(){
+  const list = document.getElementById('langOptionsList');
+  list.innerHTML = LANGUAGES.map(lang=>{
+    const locked = state.plan==='free' && lang!=='English';
+    return `<div class="row" style="cursor:pointer;" onclick="selectLanguage('${lang}', ${locked})">
+      <div class="row-text"><div class="row-title">${lang}</div></div>
+      ${lang===state.language ? '<span style="color:var(--pro);font-weight:700;">✓</span>' : (locked ? '<span class="lock-icon">🔒</span>' : '')}
+    </div>`;
+  }).join('');
+  document.getElementById('langSheetOverlay').classList.add('show');
+}
+function selectLanguage(lang, locked){
+  if(locked){
+    closeSheet('langSheetOverlay');
+    showUpgradeSheet('20+ Languages', 'Upgrade to Pro to create content in Hindi, Tamil, Telugu and 17+ more Indian languages.');
+    return;
+  }
+  state.language = lang;
+  document.getElementById('profLanguageValue').textContent = lang;
+  closeSheet('langSheetOverlay');
+  toast(`Language set to ${lang}`,'success');
+}
+
+/* ============================================================
+   SUBSCRIPTION / PAYMENT
+   ============================================================ */
+function startUpgrade(){
+  document.getElementById('paySheetOverlay').classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('paySheetOverlay').classList.remove('show');
+    setPlan('pro');
+    toast('Welcome to ShareKit Pro! 🎉','success');
+    showScreen('screen-dashboard');
+  }, 1600);
+}
+
+function renderCompareTable(){
+  const rows = [
+    ['✨','AI Content Generation','5 creations/day','Unlimited'],
+    ['✏️','Caption Generator','English Only','20+ Languages'],
+    ['#','Keywords & Hashtags','English Only','20+ Languages'],
+    ['📅','AI Content Calendar','3 Days','30 Days'],
+    ['🕐','AI Best Posting Time','🔒 Locked','✅ Unlocked'],
+    ['🔔','Smart Reminder Notifications','🔒 Locked','✅ Unlimited'],
+    ['🧠','AI Memory','🔒 Locked','✅ Remembers niche, tone, language & preferences'],
+    ['✨','AI Auto Creator','🔒 Locked','✅ Auto Caption + Keywords + Hashtags + Schedule + Best Time'],
+    ['📁','History','🔒 Locked','✅ Unlimited'],
+    ['🎧','AI Support Assistant','🔒 Locked','✅ Unlimited']
+  ];
+  document.getElementById('compareTableBody').innerHTML = rows.map(r=>`
+    <tr>
+      <td><div class="feat-col"><span>${r[0]}</span><span>${r[1]}</span></div></td>
+      <td class="free-col">${r[2]}</td>
+      <td class="pro-col">${r[3]}</td>
+    </tr>
+  `).join('');
+}
+
+function renderTestimonials(){
+  const testimonials = [
+    { name:'Amit Sharma', role:'ShareChat Creator', quote:"ShareKit Pro has completely changed the way I create content. It's like having a full team!" },
+    { name:'Neha Verma', role:'ShareChat Creator', quote:"The AI suggestions and best posting time feature helped me grow my audience 3x faster!" },
+    { name:'Rohit Patil', role:'ShareChat Creator', quote:"Finally an AI tool that actually understands Hindi content. Game changer for my page." },
+    { name:'Priya Nair', role:'ShareChat Creator', quote:"The content calendar keeps me consistent. I never miss a posting day now." }
+  ];
+  document.getElementById('testimonialTrack').innerHTML = testimonials.map(t=>`
+    <div class="testimonial-card">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+        <div class="avatar avatar-sm"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+        <div><div style="font-weight:700;font-size:12.5px;">${t.name}</div><div style="font-size:11px;color:var(--text-secondary);">${t.role}</div></div>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-primary);line-height:1.5;">"${t.quote}"</div>
+    </div>
+  `).join('');
+  document.getElementById('testimonialDots').innerHTML = testimonials.map((_,i)=>`<span class="d ${i===0?'active':''}"></span>`).join('');
+}
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+function renderFAQ(){
+  const faqs = [
+    { q:'What is ShareKit?', a:'ShareKit is an AI content toolkit built for ShareChat creators. It generates captions, keywords, hashtags, and content plans in your own language.' },
+    { q:'Does ShareKit post directly to ShareChat?', a:"Not yet. ShareChat doesn't offer a public posting API, so ShareKit generates content you copy and paste into the ShareChat app." },
+    { q:'How many languages are supported on Pro?', a:'Pro supports 20+ Indian languages including Hindi, Tamil, Telugu, Bengali, Marathi and more.' },
+    { q:'Can I cancel anytime?', a:'Yes. You can cancel your Pro subscription anytime from Profile → Subscription Plan. No hidden charges.' },
+    { q:'What happens when I hit my free daily limit?', a:'Free plan includes 5 AI creations per day. The counter resets every 24 hours, or you can upgrade to Pro for unlimited access.' }
+  ];
+  document.getElementById('faqList').innerHTML = faqs.map((f,i)=>`
+    <div class="faq-item">
+      <div class="faq-q" style="cursor:pointer;" onclick="toggleFaq(${i})">
+        <span>${f.q}</span><span id="faqChevron${i}">＋</span>
+      </div>
+      <div class="faq-a" id="faqA${i}">${f.a}</div>
+    </div>
+  `).join('');
+}
+function toggleFaq(i){
+  const a = document.getElementById('faqA'+i);
+  const chev = document.getElementById('faqChevron'+i);
+  a.classList.toggle('open');
+  chev.textContent = a.classList.contains('open') ? '−' : '＋';
+}
+
+function setLegal(type){
+  const title = document.getElementById('legalTitle');
+  const body = document.getElementById('legalBody');
+  if(type==='privacy'){
+    title.textContent = 'Privacy Policy';
+    body.innerHTML = `<p>ShareKit collects your email, content preferences, and generated content history to provide and improve the service.</p>
+      <p>We do not sell your personal data. Payment processing is handled securely by Razorpay; ShareKit does not store your card details.</p>
+      <p>You can request deletion of your account and associated data at any time from Profile → Account Information.</p>
+      <p style="color:#9CA3AF;font-size:11.5px;">This is placeholder text for prototype purposes.</p>`;
+  } else {
+    title.textContent = 'Terms & Conditions';
+    body.innerHTML = `<p>By using ShareKit, you agree to use AI-generated content responsibly and in line with ShareChat's own community guidelines.</p>
+      <p>ShareKit is an independent tool and is not affiliated with, endorsed by, or officially connected to ShareChat or Mohalla Tech Pvt Ltd.</p>
+      <p>Pro subscriptions renew monthly at ₹199 and can be cancelled anytime before the next billing cycle.</p>
+      <p style="color:#9CA3AF;font-size:11.5px;">This is placeholder text for prototype purposes.</p>`;
+  }
+}
+
+/* ============================================================
+   SELECT OPTIONS
+   ============================================================ */
+function populateSelectOptions(){
+  fillSelect('prefContentType', CONTENT_TYPES, 'Motivation');
+  fillSelect('prefTone', TONES, 'Positive');
+  fillSelect('prefLanguage', LANGUAGES, state.language);
+  fillSelect('autoContentType', CONTENT_TYPES, 'Motivation');
+  fillSelect('autoTone', TONES, 'Positive');
+
+  const langSel = document.getElementById('prefLanguage');
+  langSel.onchange = function(){
+    if(state.plan==='free' && this.value!=='English'){
+      this.value='English';
+      showUpgradeSheet('20+ Languages', 'Upgrade to Pro to create content in Hindi, Tamil, Telugu and 17+ more Indian languages.');
+    }
+  };
+}
+function fillSelect(id, options, defaultVal){
+  const sel = document.getElementById(id);
+  if(!sel) return;
+  const current = sel.value || defaultVal;
+  sel.innerHTML = options.map(o=>`<option value="${o}" ${o===current?'selected':''}>${o}</option>`).join('');
+}
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', function(){
+  populateSelectOptions();
+  renderCompareTable();
+  renderTestimonials();
+  renderFAQ();
+  setLegal('privacy');
+  setPlan('free');
+  showScreen('screen-welcome');
+});
+</script>
+</body>
+</html>
