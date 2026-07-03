@@ -1,0 +1,14 @@
+{
+  "name": "sharekit-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "razorpay": "^2.9.4",
+    "firebase-admin": "^12.6.0"
+  }
+}
